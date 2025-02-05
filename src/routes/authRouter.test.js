@@ -5,16 +5,9 @@ const testUser = { name: 'pizza diner', email: 'reg@test.com', password: 'a' };
 let testUserAuthToken;
 jest.setTimeout(60 * 1000 * 5); // 5 minutes
 
-async function registerRandomUser() {
-    testUser.email = Math.random().toString(36).substring(2, 12) + '@test.com';
-    const registerRes = await request(app).post('/api/auth').send(testUser);
-    expect(registerRes.status).toBe(200);
-    return registerRes;
-}
-
 beforeAll(async () => {
     const registerRes = await registerRandomUser();
-    testUserAuthToken = registerRes.body.token;
+    testUserAuthToken = registerRes.token;
     expectValidJwt(testUserAuthToken);
 });
 
@@ -35,7 +28,7 @@ test("bad-logout", async () => {
 test("good-logout", async () => {
     const registerRes = await registerRandomUser();
 
-    const token = registerRes.body.token
+    const token = registerRes.token
     const resp = await request(app)
         .delete('/api/auth')
         .set('Authorization', `Bearer ${token}`);
@@ -44,15 +37,56 @@ test("good-logout", async () => {
 })
 
 test('login', async () => {
-    const loginRes = await request(app).put('/api/auth').send(testUser);
+    const newUser = await registerRandomUser()
+
+    const loginRes = await request(app).put('/api/auth').send({email: newUser.user.email, password: newUser.user.password});
     expect(loginRes.status).toBe(200);
     expectValidJwt(loginRes.body.token);
 
-    const expectedUser = { ...testUser, roles: [{ role: 'diner' }] };
-    delete expectedUser.password;
-    expect(loginRes.body.user).toMatchObject(expectedUser);
+    expect(loginRes.body.user.id).toBe(newUser.user.id);
+    expect(loginRes.body.user.name).toBe(newUser.user.name);
+    expect(loginRes.body.user.email).toBe(newUser.user.email);
+    expect(loginRes.body.user.roles.role).toBe(newUser.user.roles.role);
 });
 
+test('updateUser', async () => {
+    const newUser = await registerRandomUser()
+    const { user: { id }, token } = newUser;
+
+    const changes = {email: generateRandomEmail(), password: generateRandomString()};
+    const response = await request(app)
+        .put(`/api/auth/${id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send(changes);
+
+    expect(response.status).toBe(200);
+    expect(response.body.id).toBe(newUser.user.id)
+    expect(response.body.name).toBe(newUser.user.name)
+    expect(response.body.email).toBe(changes.email)
+
+});
+
+
+
+//Util functions
 function expectValidJwt(potentialJwt) {
     expect(potentialJwt).toMatch(/^[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*$/);
 }
+
+function generateRandomEmail() {
+    return generateRandomString() + '@test.com';
+}
+
+function generateRandomString() {
+    return Math.random().toString(36).substring(2, 12);
+}
+
+async function registerRandomUser() {
+    const user = { name: `test ${generateRandomEmail()}`, email: generateRandomEmail(), password: generateRandomString() };
+
+    const registerRes = await request(app).post('/api/auth').send(user);
+    expect(registerRes.status).toBe(200);
+    registerRes.body.user.password = user.password;
+    return registerRes.body;
+}
+
