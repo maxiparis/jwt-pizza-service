@@ -1,7 +1,6 @@
 const request = require('supertest');
 const app = require('../service');
 const {registerRandomUser, expectValidJwt, generateRandomEmail, generateRandomString, registerRandomAdmin,
-    registerRandomFranchisee
 } = require("./testingUtils");
 
 let testUserAuthToken;
