@@ -1,6 +1,8 @@
 const request = require('supertest');
 const app = require('../service');
-const {registerRandomUser, expectValidJwt, generateRandomEmail, generateRandomString} = require("./testingUtils");
+const {registerRandomUser, expectValidJwt, generateRandomEmail, generateRandomString, registerRandomAdmin,
+    registerRandomFranchisee
+} = require("./testingUtils");
 
 let testUserAuthToken;
 jest.setTimeout(60 * 1000 * 5); // 5 minutes
@@ -16,6 +18,14 @@ test('register-bad', async () => {
     const badRegisterRes = await request(app).post('/api/auth').send(badUser);
     expect(badRegisterRes.status).toBe(400);
 })
+
+
+test('register-admin', async () => {
+    const admin = await registerRandomAdmin()
+    expect(admin.token).toBeDefined()
+    expectValidJwt(admin.token);
+})
+
 
 test("logout-bad", async () => {
     //sending

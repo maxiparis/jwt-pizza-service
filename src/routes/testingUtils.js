@@ -22,9 +22,29 @@ async function registerRandomUser() {
     return registerRes.body;
 }
 
+async function registerRandomAdmin() {
+    const user = { name: `admin ${generateRandomEmail()}`, email: generateRandomEmail(), password: generateRandomString() };
+
+    const registerRes = await request(app).post('/api/auth/admin').send(user);
+    expect(registerRes.status).toBe(200);
+    registerRes.body.user.password = user.password;
+    return registerRes.body;
+}
+
+async function registerRandomFranchisee() {
+    const user = { name: `franchisee ${generateRandomEmail()}`, email: generateRandomEmail(), password: generateRandomString() };
+
+    const registerRes = await request(app).post('/api/auth/franchisee').send(user);
+    expect(registerRes.status).toBe(200);
+    registerRes.body.user.password = user.password;
+    return registerRes.body;
+}
+
 module.exports = {
     registerRandomUser,
     generateRandomEmail,
     generateRandomString,
-    expectValidJwt
+    expectValidJwt,
+    registerRandomAdmin,
+    registerRandomFranchisee
 };
