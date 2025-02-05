@@ -9,7 +9,7 @@ JWTs are used for authentication objects.
 ## Deployment
 
 In order for the server to work correctly it must be configured by providing a `config.js` file.
-
+ 
 ```js
 export default {
   jwtSecret: 'your-cryptographically-generated-secret-here',
