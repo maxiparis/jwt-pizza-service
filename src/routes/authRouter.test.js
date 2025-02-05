@@ -1,5 +1,6 @@
 const request = require('supertest');
 const app = require('../service');
+const {registerRandomUser, expectValidJwt, generateRandomEmail, generateRandomString} = require("./testingUtils");
 
 let testUserAuthToken;
 jest.setTimeout(60 * 1000 * 5); // 5 minutes
@@ -74,7 +75,7 @@ test('updateUser', async () => {
 
 test('updateUser-bad', async () => {
     const newUser = await registerRandomUser()
-    const { user: { id }, token } = newUser;
+    const { token } = newUser;
 
     const changes = {email: generateRandomEmail(), password: generateRandomString()};
     const response = await request(app)
@@ -84,28 +85,3 @@ test('updateUser-bad', async () => {
 
     expect(response.status).toBe(403);
 });
-
-
-
-//Util functions
-function expectValidJwt(potentialJwt) {
-    expect(potentialJwt).toMatch(/^[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*$/);
-}
-
-function generateRandomEmail() {
-    return generateRandomString() + '@test.com';
-}
-
-function generateRandomString() {
-    return Math.random().toString(36).substring(2, 12);
-}
-
-async function registerRandomUser() {
-    const user = { name: `test ${generateRandomEmail()}`, email: generateRandomEmail(), password: generateRandomString() };
-
-    const registerRes = await request(app).post('/api/auth').send(user);
-    expect(registerRes.status).toBe(200);
-    registerRes.body.user.password = user.password;
-    return registerRes.body;
-}
-
