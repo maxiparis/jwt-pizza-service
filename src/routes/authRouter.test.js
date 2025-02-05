@@ -16,7 +16,7 @@ test('register-bad', async () => {
     expect(badRegisterRes.status).toBe(400);
 })
 
-test("bad-logout", async () => {
+test("logout-bad", async () => {
     //sending
     const resp = await request(app)
         .delete('/api/auth')
@@ -24,7 +24,7 @@ test("bad-logout", async () => {
     expect(resp.status).toBe(401);
 })
 
-test("good-logout", async () => {
+test("logout", async () => {
     const registerRes = await registerRandomUser();
 
     const token = registerRes.token
@@ -48,6 +48,13 @@ test('login', async () => {
     expect(loginRes.body.user.roles.role).toBe(newUser.user.roles.role);
 });
 
+test('login-bad', async () => {
+    const newUser = await registerRandomUser()
+
+    const loginRes = await request(app).put('/api/auth').send({email: newUser.user.email, password: "BAD-PASS"});
+    expect(loginRes.status).toBe(404);
+});
+
 test('updateUser', async () => {
     const newUser = await registerRandomUser()
     const { user: { id }, token } = newUser;
@@ -63,6 +70,19 @@ test('updateUser', async () => {
     expect(response.body.name).toBe(newUser.user.name)
     expect(response.body.email).toBe(changes.email)
 
+});
+
+test('updateUser-bad', async () => {
+    const newUser = await registerRandomUser()
+    const { user: { id }, token } = newUser;
+
+    const changes = {email: generateRandomEmail(), password: generateRandomString()};
+    const response = await request(app)
+        .put(`/api/auth/99999`) //bad id
+        .set('Authorization', `Bearer ${token}`)
+        .send(changes);
+
+    expect(response.status).toBe(403);
 });
 
 
