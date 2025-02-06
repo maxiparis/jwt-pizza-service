@@ -2,13 +2,6 @@ const request = require('supertest');
 const app = require('../service');
 const {registerRandomUser, generateRandomString, registerRandomAdmin} = require("./testingUtils");
 
-// let newUser;
-//
-// beforeAll(async () => {
-//     // newUser = registerRandomUser()
-//     // token = newUser.token
-// })
-
 test("get-franchises-all", async () => {
     const res = await request(app).get('/api/franchise')
     expect(res.status).toBe(200);
@@ -28,6 +21,9 @@ describe("franchises",  () => {
     let newFranchisee;
     let adminUser;
     let franchises;
+    let store;
+
+    let badId = 52394502
 
     test("create-franchise", async() => {
         /**
@@ -67,19 +63,46 @@ describe("franchises",  () => {
     });
 
     test("create-store", async () => {
-        //TODO
-    })
+        expect(franchises[0].id).toBeDefined();
+
+        let res = await request(app)
+            .post(`/api/franchise/${franchises[0].id}/store`) //TODO: pass id store
+            .set('Authorization', `Bearer ${adminUser.token}`)
+            .send({franchiseId: franchises[0].id, "name":"SLC"})
+
+        expect(res.status).toBe(200);
+        store = res.body
+
+        expect(store).toBeDefined()
+    });
 
     test("create-store-bad", async () => {
-        //TODO
+
+        expect(franchises[0].id).toBeDefined();
+
+        let res = await request(app)
+            .post(`/api/franchise/${badId}/store`) //TODO: pass id store
+            .set('Authorization', `Bearer ${adminUser.token}`)
+            .send({franchiseId: franchises[0].id, "name":"SLC"})
+
+        expect(res.status).toBe(500);
     })
 
     test("delete-store", async () => {
-        //TODO
+        expect(store.id).toBeDefined()
+
+        const res = await request(app)
+            .delete(`/api/franchise/${franchises[0].id}/store/${store.id}`)
+            .set('Authorization', `Bearer ${adminUser.token}`)
+
+        expect(res.status).toBe(200);
     })
 
     test("delete-store-bad", async () => {
-        //TODO
+        const res = await request(app)
+            .delete(`/api/franchise/asdf/store/asdf`)
+
+        expect(res.status).toBe(401);
     })
 
     test("delete-franchise-bad", async () => {
