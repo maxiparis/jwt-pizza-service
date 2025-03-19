@@ -66,6 +66,7 @@ authRouter.authenticateToken = (req, res, next) => {
 // register
 authRouter.post(
   '/',
+  (req, res, next) => { console.log('Handling POST /api/auth'); next(); },
   asyncHandler(async (req, res) => {
     const { name, email, password } = req.body;
     if (!name || !email || !password) {
@@ -80,6 +81,7 @@ authRouter.post(
 // register ADMIN
 authRouter.post(
     '/admin',
+    (req, res, next) => { console.log('Handling POST /api/auth/admin'); next(); },
     asyncHandler(async (req, res) => {
         const { name, email, password } = req.body;
         if (!name || !email || !password) {
@@ -94,6 +96,7 @@ authRouter.post(
 // register Franchise
 authRouter.post(
     '/franchisee',
+    (req, res, next) => { console.log('Handling POST /api/auth/franchisee'); next(); },
     asyncHandler(async (req, res) => {
         const { name, email, password } = req.body;
         if (!name || !email || !password) {
@@ -108,8 +111,8 @@ authRouter.post(
 // login
 authRouter.put(
   '/',
+  (req, res, next) => { console.log('Handling PUT /api/auth'); next(); },
   asyncHandler(async (req, res) => {
-    console.log("in Login")
     const { email, password } = req.body;
     const user = await DB.getUser(email, password);
     const auth = await setAuth(user);
@@ -120,6 +123,7 @@ authRouter.put(
 // logout
 authRouter.delete(
   '/',
+  (req, res, next) => { console.log('Handling DELETE /api/auth'); next(); },
   authRouter.authenticateToken,
   asyncHandler(async (req, res) => {
     await clearAuth(req);
@@ -130,6 +134,7 @@ authRouter.delete(
 // updateUser
 authRouter.put(
   '/:userId',
+  (req, res, next) => { console.log(`Handling PUT /api/auth/${req.params.userId}`); next(); },
   authRouter.authenticateToken,
   asyncHandler(async (req, res) => {
     const { email, password } = req.body;
