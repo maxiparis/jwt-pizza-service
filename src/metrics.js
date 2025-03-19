@@ -11,7 +11,8 @@ function requestTracker() {
 }
 
 // This will periodically send metrics to Grafana
-const timer = setInterval(() => {
+let timer;
+timer = setInterval(() => {
   Object.keys(requests).forEach((requestType) => {
     metrics('requests', requests[requestType], {requestType});
   });
