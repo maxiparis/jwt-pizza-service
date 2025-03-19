@@ -1,4 +1,5 @@
 const config = require('./config');
+const os = require('os');
 
 const requests = {};
 
@@ -10,11 +11,13 @@ function requestTracker() {
   };
 }
 
-// This will periodically send metrics to Grafana
 setInterval(() => {
   Object.keys(requests).forEach((requestType) => {
-    metrics('requests', requests[requestType], {requestType});
+    metrics('requests', requests[requestType], {requestType}, '1');
   });
+
+  metrics('cpu_usage', getCpuUsagePercentage());
+  metrics('memory_usage', getMemoryUsagePercentage());
 }, 10000);
 
 function metrics(metricName, metricValue, attributes) {
@@ -72,4 +75,21 @@ function metrics(metricName, metricValue, attributes) {
       });
 }
 
-module.exports = {requestTracker};
+function getCpuUsagePercentage() {
+  const cpuUsage = os.loadavg()[0] / os.cpus().length;
+  // const res = cpuUsage.toFixed(2) * 100
+  // console.log("cpu usage:", res)
+  return cpuUsage.toFixed(2) * 100;
+}
+
+function getMemoryUsagePercentage() {
+  const totalMemory = os.totalmem();
+  const freeMemory = os.freemem();
+  const usedMemory = totalMemory - freeMemory;
+  const memoryUsage = (usedMemory / totalMemory) * 100;
+  // const res = Math.floor(memoryUsage);
+  // console.log("memory Usage:", res)
+  return Math.floor(memoryUsage);
+}
+
+module.exports = { requestTracker };
