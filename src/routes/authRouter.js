@@ -3,6 +3,8 @@ const jwt = require('jsonwebtoken');
 const config = require('../config.js');
 const { asyncHandler } = require('../endpointHelper.js');
 const { DB, Role } = require('../database/database.js');
+const Logger = require('pizza-logger')
+const logger = new Logger(config)
 
 const authRouter = express.Router();
 
@@ -50,6 +52,7 @@ async function setAuthUser(req, res, next) {
       }
     } catch {
       req.user = null;
+      logger.unhandledErrorLogger({ err: { message: 'Error in setAuthUser'} })
     }
   }
   next();
