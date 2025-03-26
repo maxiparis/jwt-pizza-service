@@ -3,6 +3,8 @@ const config = require('../config.js');
 const { Role, DB } = require('../database/database.js');
 const { authRouter } = require('./authRouter.js');
 const { asyncHandler, StatusCodeError } = require('../endpointHelper.js');
+const Logger = require('pizza-logger')
+const logger = new Logger(config)
 
 const orderRouter = express.Router();
 
@@ -95,6 +97,7 @@ orderRouter.post(
     const j = await r.json();
     if (r.ok) {
       res.send({ order, reportSlowPizzaToFactoryUrl: j.reportUrl, jwt: j.jwt });
+      logger.factoryLogger({reqBody: JSON.stringify({ diner: { id: req.user.id, name: req.user.name, email: req.user.email }, order })})
     } else {
       res.status(500).send({ message: 'Failed to fulfill order at factory', reportPizzaCreationErrorToPizzaFactoryUrl: j.reportUrl });
     }
